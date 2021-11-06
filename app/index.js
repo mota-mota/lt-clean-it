@@ -1,63 +1,89 @@
 const http = require('http');
-const data = require('./src/actions');
-const {parse} = require('querystring');
+const {addToStock, processSale} = require('./src/controller');
 
-const router = (req, res) => {
-    const showIt = (err = null, suchData = null) => {
-        if(err) res.write('error');
+const response = ({msg = '', data = null, errors = null}) => {
+    return JSON.stringify({msg, data, errors})
+}
 
-        res.write('success');
-    }
+const getData = req => {
+    return new Promise((resolve, reject) => {
+        try {
+            let body = "";
+
+            req.on("data", chunk => {
+                body += chunk.toString();
+            });
+
+            req.on("end", () => {
+                resolve(JSON.parse(body));
+            })
+        } catch (err) {
+            reject(err);
+        }
+    })
+}
+
+const router = async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
 
     const URL = req.url;
     const METHOD = req.method;
-    const NOT_SUPPORTED = `El método ${METHOD} no es soportado`;
+    const METHOD_NOT_SUPPORTED = `El método ${METHOD} no es soportado`;
 
     switch (URL) {
         case '/api/v1/registrar-compra':
-            if(METHOD === 'POST'){
-                let body = '';
-                req.on('data', chunk => {
-                    body += chunk.toString();
-                });
+            if (METHOD === 'POST') {
+                try {
+                    const data = await getData(req);
 
-                let isSuccess = false;
-                req.on('end', () => {
-                    body = JSON.parse(body);
-                    const pr = data.actionAddStock(showIt, body);
+                    const result = await addToStock(data);
 
-                    pr
-                        .then(r => {
-                            res.write('Añadido al stock');
-                            res.end();
-                        })
-                        .catch(err => {
-                            res.write(err);
-                            console.error(err)
-                            res.end();
-                        });
-                });
+                    res.end(response({msg: result}));
+                } catch (err) {
+                    res.statusCode = 500;
+                    res.end(response({
+                        msg: 'Ocurrió un error',
+                        errors: err.toString()
+                    }));
+                }
+
                 break;
             }
 
-            res.write(NOT_SUPPORTED);
-            res.end();
+            res.statusCode = 404;
+            res.end(response({
+                msg: METHOD_NOT_SUPPORTED
+            }))
 
             break;
         case '/api/v1/registrar-venta':
-            if(METHOD === 'POST'){
-                res.write('holi')
-                res.end();
+            if (METHOD === 'POST') {
+                try {
+                    const data = await getData(req);
+                    const result = await processSale(data);
+
+                    res.end(response({
+                        msg: result
+                    }));
+                } catch (err) {
+                    res.statusCode = 500;
+                    res.end(response({
+                        msg: err
+                    }));
+                }
                 break;
             }
 
-            res.write(NOT_SUPPORTED);
-            res.end();
-
+            res.statusCode = 500;
+            res.end(response({
+                msg: METHOD_NOT_SUPPORTED
+            }));
             break;
         default:
-            res.write('No se encontró la ruta');
-            res.end();
+            res.statusCode = 404;
+            res.end(response({
+                msg: 'Ruta no encontrada'
+            }));
 
             break;
     }
