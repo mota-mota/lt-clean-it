@@ -1,22 +1,38 @@
 const {connection} = require('./db/connection');
 
 const model = {
-    queryProductExists(id, callback) {
-        const QUERY = `SELECT EXISTS(SELECT 1 FROM products WHERE id = ${id}) as it_exists;
-        SELECT SUM(qty) as 'qty'
-        FROM product_restock_log
-        WHERE product_id = ${id} AND MONTH (created_at) = MONTH (CURRENT_DATE) AND YEAR (created_at) = YEAR (CURRENT_DATE)
-        group by(qty);`;
-        connection.query(QUERY, (err, rows) => {
-            if (err) {
-                console.error(err);
-                callback(err);
-            }
+    async queryAddToStock({idProducto, cantidad}){
+        return new Promise(((resolve, reject) => {
+            connection.query(`UPDATE products
+                              SET stock = stock + ${cantidad}
+                              WHERE id = '${idProducto}'`, (err, rows) => {
+                if(err) reject(err.toString());
 
-            callback(null, rows);
-        });
+                resolve(rows);
+            });
+        }))
     },
-    async productExists(idProducto) {
+    async queryAddToRestockLog({idProducto, cantidad}){
+        return new Promise(((resolve, reject) => {
+            connection.query(`INSERT INTO product_restock_log (product_id, qty)
+                               VALUES (${idProducto}, ${cantidad})`, (err, rows) => {
+                if(err) reject(err.toString());
+
+                resolve(rows);
+            })
+        }))
+    },
+    async queryAddProduct({idProducto, nombreProducto, cantidad}){
+        return new Promise((resolve, reject) => {
+            connection.query(`INSERT INTO products (id, name, stock)
+                              VALUES (${idProducto}, '${nombreProducto}', ${cantidad})`, (err, rows) => {
+                if(err) reject(err.toString());
+
+                resolve(rows);
+            });
+        })
+    },
+    async queryProductExists(idProducto) {
         return new Promise(((resolve, reject) => {
             connection.query(`SELECT EXISTS(SELECT 1 FROM products WHERE id = '${idProducto}') as it_exists;`, (err, rows) => {
                 if (err) reject(err.toString());
@@ -25,7 +41,7 @@ const model = {
             });
         }))
     },
-    async existencesOfCurrentMonth(idProducto) {
+    async queryExistencesOfCurrentMonth(idProducto) {
         return new Promise(((resolve, reject) => {
             connection.query(`SELECT SUM(qty) as 'qty'
                               FROM product_restock_log
@@ -38,17 +54,7 @@ const model = {
             })
         }))
     },
-    baseQuery(query, callback) {
-        connection.query(query, (err, rows) => {
-            if (err) {
-                console.error(err);
-                callback(err);
-            }
-
-            callback(null, rows);
-        });
-    },
-    async checkStock(productId) {
+    async queryCheckStock(productId) {
         return new Promise(((resolve, reject) => {
             connection.query(`SELECT stock
                               FROM products
@@ -59,7 +65,7 @@ const model = {
             });
         }));
     },
-    async reduceStock({idProducto, cantidad}) {
+    async queryReduceStock({idProducto, cantidad}) {
         return new Promise(((resolve, reject) => {
             connection.query(`UPDATE products
                               set stock = stock - ${cantidad}
@@ -70,7 +76,7 @@ const model = {
             });
         }))
     },
-    async logSale({idProducto, cantidad}) {
+    async queryLogSale({idProducto, cantidad}) {
         return new Promise(((resolve, reject) => {
             connection.query(`INSERT INTO product_sale_log (product_id, qty)
                               VALUES ('${idProducto};', '${cantidad}')`, (err, rows) => {
