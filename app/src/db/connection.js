@@ -11,32 +11,7 @@ const connection = mysql.createConnection({
     multipleStatements: true
 });
 
-const setAction = (action, callback) => {
-    /*connection.connect(err => {
-        if (err) {
-            console.error({err})
-            callback('error de conexión');
-        }
-
-        console.log('conn')
-    });*/
-
-    try{
-        action(callback);
-    } catch (err) {
-        console.error('Ocurrió un error ejecutando una acción', err);
-    }
-
-    /*connection.end((err) => {
-        if (err) {
-            console.error(err);
-            callback('error de conexión')
-        }
-        console.log('disconn')
-    });*/
-}
-
-module.exports = {connection, setAction};
+module.exports = {connection};
 
 /*
 connection.connect(err => {
