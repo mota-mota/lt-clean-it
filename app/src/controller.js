@@ -18,13 +18,13 @@ const Controller = {
                     return;
                 }
 
-                if(fecha){
+                if (fecha) {
                     const [y, m, d] = fecha.split('-');
 
                     const today = new Date();
-                    const date = new Date(y, m-1, d);
+                    const date = new Date(y, m - 1, d);
 
-                    if(date > today){
+                    if (date > today) {
                         reject('La fecha de compra no puede ser mayor a la fecha actual');
                         return;
                     }
@@ -32,7 +32,7 @@ const Controller = {
 
                 cantidad *= 1;
 
-                if(cantidad > 30){
+                if (cantidad > 30) {
                     reject(`Las compras por producto no deben superar las 30 unidades por mes.`);
                     return;
                 }
@@ -49,17 +49,17 @@ const Controller = {
                     const fromQty = resExistences && resExistences.qty ? resExistences.qty : 0;
                     const existencesQty = fromQty + cantidad;
 
-                    if(existencesQty > 30){
+                    if (existencesQty > 30) {
                         reject(`Las compras por producto no deben superar las 30 unidades por mes. Cantidad: ${cantidad} | Stock ingresado este mes: ${resExistences.qty}`);
                         return;
                     }
 
                     const {affectedRows} = await queryAddToStock({idProducto, cantidad});
 
-                    if(affectedRows){
+                    if (affectedRows) {
                         const {affectedRows} = await queryAddToRestockLog({idProducto, cantidad, fecha});
 
-                        if(affectedRows){
+                        if (affectedRows) {
                             resolve('Procesado con éxito');
                             return;
                         }
@@ -73,10 +73,10 @@ const Controller = {
                 } else {
                     const {affectedRows} = await queryAddProduct({idProducto, nombreProducto, cantidad});
 
-                    if(affectedRows){
+                    if (affectedRows) {
                         const {affectedRows} = await queryAddToRestockLog({idProducto, cantidad, fecha});
 
-                        if(affectedRows){
+                        if (affectedRows) {
                             resolve('Procesado con éxito');
                             return;
                         }

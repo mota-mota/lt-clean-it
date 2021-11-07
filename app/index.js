@@ -17,9 +17,9 @@ const getData = req => {
             });
 
             req.on("end", () => {
-                try{
+                try {
                     resolve(JSON.parse(body));
-                } catch (err){
+                } catch (err) {
                     reject('Ocurrió un error al obtener los datos');
                 }
             })

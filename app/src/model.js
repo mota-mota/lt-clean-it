@@ -1,32 +1,32 @@
 const {connection} = require('./db/connection');
 
 const model = {
-    async queryAddToStock({idProducto, cantidad}){
+    async queryAddToStock({idProducto, cantidad}) {
         return new Promise(((resolve, reject) => {
             connection.query(`UPDATE products
                               SET stock = stock + ${cantidad}
                               WHERE id = '${idProducto}'`, (err, rows) => {
-                if(err) reject(err.toString());
+                if (err) reject(err.toString());
 
                 resolve(rows);
             });
         }))
     },
-    async queryAddToRestockLog({idProducto, cantidad, fecha = false}){
+    async queryAddToRestockLog({idProducto, cantidad, fecha = false}) {
         return new Promise(((resolve, reject) => {
             connection.query(`INSERT INTO product_restock_log (product_id, qty, created_at)
                                VALUES (${idProducto}, ${cantidad}, case when ${fecha ? `'${fecha}'` : fecha} != false then '${fecha}' else CURRENT_TIMESTAMP end)`, (err, rows) => {
-                if(err) reject(err.toString());
+                if (err) reject(err.toString());
 
                 resolve(rows);
             })
         }))
     },
-    async queryAddProduct({idProducto, nombreProducto, cantidad}){
+    async queryAddProduct({idProducto, nombreProducto, cantidad}) {
         return new Promise((resolve, reject) => {
             connection.query(`INSERT INTO products (id, name, stock)
                               VALUES (${idProducto}, '${nombreProducto}', ${cantidad})`, (err, rows) => {
-                if(err) reject(err.toString());
+                if (err) reject(err.toString());
 
                 resolve(rows);
             });
