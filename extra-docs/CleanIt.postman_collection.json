@@ -1,0 +1,93 @@
+{
+	"info": {
+		"_postman_id": "a2f14ac2-c1a6-4b0a-bbb8-9e8e3f240cdd",
+		"name": "CleanIt",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Registrar compra",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idProducto\": \"1\",\r\n    \"nombreProducto\": \"Esponja para limpieza profunda\",\r\n    \"cantidad\": \"10\",\r\n    \"fecha\": \"2021-04-01\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{endpoint}}/api/v1/registrar-compra",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"registrar-compra"
+					]
+				},
+				"description": "Al no tener productos registrados en la base de datos, al inicio verificara si ya existe un producto con `idProducto` y si no creará uno con los datos dados (`idProducto`, `nombreProducto`, `cantidad`), posteriormente ingresará al log de compras de producto.\n\nEl parametro `fecha` es opcional, y este campo seteará el log de compra en `created_at` con la fecha dada, este parametro debe estar en formato 'Y-m-d' (año-mes-día)"
+			},
+			"response": []
+		},
+		{
+			"name": "Registrar venta",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idProducto\": \"1\",\r\n    \"cantidad\": \"10\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{endpoint}}/api/v1/registrar-venta",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"registrar-venta"
+					]
+				},
+				"description": "Recibe `idProducto` y `cantidad`, restara stock y agregara un registro al log de ventas."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "endpoint",
+			"value": "localhost:3000"
+		}
+	]
+}
