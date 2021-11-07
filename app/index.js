@@ -1,5 +1,7 @@
 const http = require('http');
+const dotenv = require('dotenv');
 const {addToStock, processSale} = require('./src/controller');
+dotenv.config();
 
 const response = ({msg = '', data = null, errors = null}) => {
     return JSON.stringify({msg, data, errors})
@@ -15,7 +17,11 @@ const getData = req => {
             });
 
             req.on("end", () => {
-                resolve(JSON.parse(body));
+                try{
+                    resolve(JSON.parse(body));
+                } catch (err){
+                    reject('Ocurrió un error al obtener los datos');
+                }
             })
         } catch (err) {
             reject(err);
@@ -89,4 +95,4 @@ const router = async (req, res) => {
     }
 }
 
-http.createServer(router).listen(3001);
+http.createServer(router).listen(process.env.CLEANIT_SERVER_PORT);
