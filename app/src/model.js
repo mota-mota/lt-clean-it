@@ -12,10 +12,10 @@ const model = {
             });
         }))
     },
-    async queryAddToRestockLog({idProducto, cantidad}){
+    async queryAddToRestockLog({idProducto, cantidad, fecha = false}){
         return new Promise(((resolve, reject) => {
-            connection.query(`INSERT INTO product_restock_log (product_id, qty)
-                               VALUES (${idProducto}, ${cantidad})`, (err, rows) => {
+            connection.query(`INSERT INTO product_restock_log (product_id, qty, created_at)
+                               VALUES (${idProducto}, ${cantidad}, case when ${fecha ? `'${fecha}'` : fecha} != false then '${fecha}' else CURRENT_TIMESTAMP end)`, (err, rows) => {
                 if(err) reject(err.toString());
 
                 resolve(rows);
@@ -41,17 +41,19 @@ const model = {
             });
         }))
     },
-    async queryExistencesOfCurrentMonth(idProducto) {
+    async queryExistencesOfCurrentMonth({idProducto, fecha = false}) {
         return new Promise(((resolve, reject) => {
-            connection.query(`SELECT SUM(qty) as 'qty'
+            const QUERY = `SELECT SUM(qty) as qty
                               FROM product_restock_log
-                              WHERE product_id = '${idProducto}' AND MONTH (created_at) = MONTH (CURRENT_DATE)
-                                AND YEAR (created_at) = YEAR (CURRENT_DATE)
-                              group by(qty);`, (err, rows) => {
+                              WHERE product_id = '${idProducto}'
+                              AND DATE_FORMAT(created_at, '%Y-%m') = DATE_FORMAT(case when ${fecha ? `'${fecha}'` : fecha} != false then '${fecha}' else CURRENT_TIMESTAMP end, '%Y-%m')
+                              group by qty;`;
+
+            connection.query(QUERY, (err, rows) => {
                 if (err) reject(err);
 
                 resolve(rows);
-            })
+            });
         }))
     },
     async queryCheckStock(productId) {
