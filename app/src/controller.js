@@ -10,12 +10,24 @@ const {
 } = require('./model');
 
 const Controller = {
-    addToStock({idProducto, cantidad, nombreProducto} = {}) {
+    addToStock({idProducto = null, cantidad = null, nombreProducto = null, fecha = false} = {}) {
         return new Promise(async (resolve, reject) => {
             try {
                 if (!idProducto || !cantidad || !nombreProducto) {
                     reject('Por favor, envía todos los campos');
                     return;
+                }
+
+                if(fecha){
+                    const [y, m, d] = fecha.split('-');
+
+                    const today = new Date();
+                    const date = new Date(y, m-1, d);
+
+                    if(date > today){
+                        reject('La fecha de compra no puede ser mayor a la fecha actual');
+                        return;
+                    }
                 }
 
                 cantidad *= 1;
@@ -33,18 +45,19 @@ const Controller = {
                 }
 
                 if (resExists.it_exists) {
-                    const [resExistences] = await queryExistencesOfCurrentMonth(idProducto);
-                    const existencesQty = resExistences.qty + cantidad;
+                    const [resExistences] = await queryExistencesOfCurrentMonth({idProducto, fecha});
+                    const fromQty = resExistences && resExistences.qty ? resExistences.qty : 0;
+                    const existencesQty = fromQty + cantidad;
 
                     if(existencesQty > 30){
-                        reject(`Las compras por producto no deben superar las 30 unidades por mes. Cantidad: ${cantidad} | Stock: ${resExistences.qty}`);
+                        reject(`Las compras por producto no deben superar las 30 unidades por mes. Cantidad: ${cantidad} | Stock ingresado este mes: ${resExistences.qty}`);
                         return;
                     }
 
                     const {affectedRows} = await queryAddToStock({idProducto, cantidad});
 
                     if(affectedRows){
-                        const {affectedRows} = await queryAddToRestockLog({idProducto, cantidad});
+                        const {affectedRows} = await queryAddToRestockLog({idProducto, cantidad, fecha});
 
                         if(affectedRows){
                             resolve('Procesado con éxito');
@@ -61,7 +74,7 @@ const Controller = {
                     const {affectedRows} = await queryAddProduct({idProducto, nombreProducto, cantidad});
 
                     if(affectedRows){
-                        const {affectedRows} = await queryAddToRestockLog({idProducto, cantidad});
+                        const {affectedRows} = await queryAddToRestockLog({idProducto, cantidad, fecha});
 
                         if(affectedRows){
                             resolve('Procesado con éxito');
