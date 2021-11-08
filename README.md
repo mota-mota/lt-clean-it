@@ -12,7 +12,7 @@ contenedor de mysql.
 2. Desde la consola en la raíz del proyecto ejecutar ``cd app``
     1. Correr el comando ``npm install`` y esperar a que termine el proceso de node.
     2. Ejecutar ``npm run db``, este comando creará las tablas necesarias para el proyecto.
-3. Ejecutar ``npm start`` e importar la colección de Postman ubicada en ``extra-dots``, se puede encontrar documentación en cada request.
+3. Ejecutar ``npm start`` e importar la colección de Postman ubicada en ``extra-docs``, se puede encontrar documentación en cada request.
 
 Las tablas creadas para este proyecto son:
 1. `products`:
